@@ -11,7 +11,6 @@ device_id = 0x01
 
 
 seqnum = 0 
-# rssi = 0
 # gps_serial = serial.Serial('/dev/serial0',921600)
 
 TEST_GPS_STRING_1 = "$GPRMC,114455.532,A,3735.0079,N,12701.6446,E,0.000000,121.61,110706,,*0A"
@@ -47,14 +46,16 @@ def gps_convert_to_only_degree(string_data):
     degree = int(string_data[:2]) 
     minute = float(string_data[2:])
 
-    return degree + minute / 60
+    result = degree + minute / 60
+    return result
 
 
 def gps_convert_to_degree_and_minute(float_data):
-    degree = int(float_data)*100
-    minute = (float_data % 1)*60
+    degree = int(float_data) * 100
+    minute = (float_data % 1) * 60
 
-    return "%4.4f" % (degree + minute)
+    result = "%4.4f" % (degree + minute) 
+    return result
 
 
 
@@ -92,7 +93,6 @@ def send_gps_data():
     frame_buff.append((gps_data.tagid) & 0xff) # Tag id
     frame_buff.append((gps_data.seqnum >> 8) & 0xff) # seqNum
     frame_buff.append((gps_data.seqnum) & 0xff) # seqNum
-    # frame_buff.append((gps_data.rssi) & 0xff) # rssi
 
     """BODY - GPS DATA"""
     frame_buff = frame_buff + bytearray(gps_data.NS)
