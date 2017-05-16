@@ -56,7 +56,7 @@ def send_distance():
 
     """ HEADER """ 
     frame_buff.append(0x02) # stx 
-    frame_buff.append(0x04) # Len
+    frame_buff.append(0x06) # Len
     frame_buff.append(0x01) # CMD TYPE
     frame_buff.append(device_id) # DEVICE ID
 
