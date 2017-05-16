@@ -7,6 +7,7 @@ import serial
 import autosocket
 import random
 
+
 device_id = 0x01
 
 
@@ -29,6 +30,8 @@ def main():
     gps_data_parser()
     while True:
         schedule.run_pending()
+
+        # print sys.argv[1]
     #     rx_msg = gps_serial.readline()
     #     try:            
     #         value = int(float(rx_msg[13:21]))
@@ -44,7 +47,7 @@ def main():
         
 def gps_convert_to_only_degree(string_data):
     float_data = float(string_data)
-    
+
     degree = int(float_data / 100) 
     minute = float(float_data % 100)
 
