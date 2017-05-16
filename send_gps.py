@@ -43,8 +43,10 @@ def main():
 
         
 def gps_convert_to_only_degree(string_data):
-    degree = int(string_data[:2]) 
-    minute = float(string_data[2:])
+    float_data = float(string_data)
+    
+    degree = int(float_data / 100) 
+    minute = float(float_data % 100)
 
     result = degree + minute / 60
     return result
@@ -54,7 +56,7 @@ def gps_convert_to_degree_and_minute(float_data):
     degree = int(float_data) * 100
     minute = (float_data % 1) * 60
 
-    result = "%4.4f" % (degree + minute) 
+    result = "%.4f" % (degree + minute) 
     return result
 
 
@@ -84,7 +86,7 @@ def send_gps_data():
 
     """ HEADER """ 
     frame_buff.append(0x02) # STX 
-    frame_buff.append(0x1C) # Length
+    frame_buff.append(0x1B) # Length
     frame_buff.append(0x02) # CMD TYPE
     frame_buff.append(device_id) # DEVICE ID
 
@@ -96,9 +98,9 @@ def send_gps_data():
 
     """BODY - GPS DATA"""
     frame_buff = frame_buff + bytearray(gps_data.NS)
-    frame_buff = frame_buff + bytearray("%4.4f" % float(gps_data.latitude))
+    frame_buff = frame_buff + bytearray("%.6f" % gps_convert_to_only_degree(gps_data.latitude))
     frame_buff = frame_buff + bytearray(gps_data.EW)
-    frame_buff = frame_buff + bytearray("%4.4f" % float(gps_data.longitude))
+    frame_buff = frame_buff + bytearray("%.6f" % gps_convert_to_only_degree(gps_data.longitude))
 
     """FOOTER"""
     frame_buff.append(0x03) # ETX
