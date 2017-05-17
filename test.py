@@ -1,5 +1,6 @@
-import ReportDistance
+import preworld
 
+print(protocol.STX)
 
-rd = ReportDistance.ReportDistance("config.conf")
-rd.run();
+# # rd = ReportDistance.ReportDistance("config.conf")
+# rd.run()
