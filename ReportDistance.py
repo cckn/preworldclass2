@@ -1,12 +1,14 @@
-import sys
-import schedule
+#-*- coding: utf-8 -*-
+
+import schedule  # see https://github.com/dbader/schedule
 import serial
 import ConfigParser
-import AutoSocket
-import PrintConfig
-import protocol
 
-sys.path.insert(0, 'lib')
+from import_manager import AutoSocket
+from import_manager import PrintConfig
+from import_manager import protocol
+
+
 
 # CONFIG_PATH = "config.conf"
 
@@ -16,6 +18,7 @@ class ReportDistance(object):
 
     def __init__(self, config_path):
         super(ReportDistance, self).__init__()
+
         PrintConfig.PrintConfig(config_path).show()
 
         config = ConfigParser.ConfigParser()
@@ -30,10 +33,8 @@ class ReportDistance(object):
 
         """IMPULSE_RADAR_CONF"""
         serial_path = config.get("IMPULSE_RADAR_CONF", "serial_path")
-        serial_baudrate = config.getint(
-            "IMPULSE_RADAR_CONF", "serial_baudrate")
-        report_interval = config.getint(
-            "IMPULSE_RADAR_CONF", "report_interval")
+        serial_baudrate = config.getint("IMPULSE_RADAR_CONF", "serial_baudrate")
+        report_interval = config.getint("IMPULSE_RADAR_CONF", "report_interval")
 
         self.seqnum = 0
         self.distance = 0
@@ -80,7 +81,6 @@ class ReportDistance(object):
 
         while True:
             schedule.run_pending()
-            # radar_parser()
 
             rx_msg = self.radar_serial.readline()
 
@@ -91,6 +91,11 @@ class ReportDistance(object):
                 pass
 
 
+
+def main():
+
+    ex = ReportDistance("config.conf")
+    ex.run()
+
 if __name__ == "__main__":
-    rd = ReportDistance("config.conf")
-    rd.run()
+    main()

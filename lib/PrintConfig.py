@@ -13,7 +13,7 @@ class PrintConfig(object):
         for x in self.config.sections():
             print(x)
             print(self.config.items(x))
-            print()
+            print("")
 
 
 def main():

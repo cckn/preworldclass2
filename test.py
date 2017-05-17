@@ -1,6 +1,7 @@
-import preworld
+import ReportGPS
 
-print(protocol.STX)
 
-# # rd = ReportDistance.ReportDistance("config.conf")
-# rd.run()
+
+
+rd = ReportGPS.ReportGPS("config.conf")
+rd.run()

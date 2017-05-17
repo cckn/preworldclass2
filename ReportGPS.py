@@ -1,11 +1,15 @@
-import sys
-from collections import namedtuple
+#-*- coding: utf-8 -*-
+
 import schedule  # see https://github.com/dbader/schedule
 import serial
-import autosocket
+import ConfigParser
 import random
+from collections import namedtuple
 
-sys.path.insert(0, 'lib')
+from import_manager import AutoSocket
+from import_manager import PrintConfig
+from import_manager import protocol
+
 
 
 TEST_GPS_STRING_1 = "$GPRMC,114455.532,A,3735.0079,N,12701.6446,E,0.000000,121.61,110706,,*0A"
@@ -35,54 +39,67 @@ class ReportGPS(object):
         serial_baudrate = config.getint("GPS_CONF", "serial_baudrate")
         report_interval = config.getint("GPS_CONF", "report_interval")
 
+        """GPS_DUMMY_CONF"""
+        self.tagid = config.getint("GPS_DUMMY_CONF", "tagid")
+        self.zero_point = config.get("GPS_DUMMY_CONF", "zero_point")
+        self.rand_value = config.get("GPS_DUMMY_CONF", "rand_value")
+
         self.seqnum = 0
-        self.distance = 0
 
         self.gps_serial = serial.Serial(serial_path, serial_baudrate)
         self.socket = AutoSocket.AutoSocket(server_ip, server_port)
 
-        self.radar_serial.close()
-        self.radar_serial.open()
+        self.gps_serial.close()
+        self.gps_serial.open()
 
         schedule.every(report_interval).seconds.do(self.report)
 
-        self.gps = namedtuple(
-            "gps", "tagid, seqnum, rssi, NS, latitude, EW, longitude")
+        self.gps = namedtuple("gps", "tagid, seqnum, NS, latitude, EW, longitude")
         self.gps_data = 0
 
     # def init()
 
+    def update(self):
+        if self.seqnum > 0xffff:
+            self.seqnum = 0
+        else:
+            self.seqnum += 1
+
+        self.gps_data = self.gps(self.tagid ,self.seqnum, 
+                       "N", "3735.0079", "E", "12701.6446")
+
     def report(self):
-        global gps_data
+
+        self.update()
 
         self.frame_buff = bytearray()
 
         """ HEADER """
-        self.frame_buff.append(protocol.STX)  # STX
-        self.frame_buff.append(0x00)  # Length
-        self.frame_buff.append(protocol.RAPORT_GPS_DATA)  # CMD TYPE
-        self.frame_buff.append(device_id)  # DEVICE ID
+        self.frame_buff.append(protocol.STX)  # stx
+        self.frame_buff.append(0x00)  # Len
+        self.frame_buff.append(protocol.REPORT_RADAR_DATA)  # CMD TYPE
+        self.frame_buff.append(self.device_id)  # DEVICE ID
 
         """ BODY """
-        self.frame_buff.append((gps_data.tagid >> 8) & 0xff)  # Tag id
-        self.frame_buff.append((gps_data.tagid) & 0xff)  # Tag id
-        self.frame_buff.append((gps_data.seqnum >> 8) & 0xff)  # seqNum
-        self.frame_buff.append((gps_data.seqnum) & 0xff)  # seqNum
+        self.frame_buff.append(((self.gps_data.tagid) >> 8) & 0xff)  # Tag id
+        self.frame_buff.append((self.gps_data.tagid) & 0xff)  # Tag id
+        self.frame_buff.append((self.gps_data.seqnum >> 8) & 0xff)  # seqNum
+        self.frame_buff.append((self.gps_data.seqnum) & 0xff)  # seqNum
 
         """BODY - GPS DATA"""
-        self.frame_buff = self.frame_buff + bytearray(gps_data.NS)
+        self.frame_buff = self.frame_buff + bytearray(self.gps_data.NS)
         self.frame_buff = self.frame_buff + \
-            bytearray("%.6f" % convert_to_only_degree(gps_data.latitude))
-        self.frame_buff = self.frame_buff + bytearray(gps_data.EW)
+            bytearray("%.6f" % self.convert_to_only_degree(self.gps_data.latitude))
+        self.frame_buff = self.frame_buff + bytearray(self.gps_data.EW)
         self.frame_buff = self.frame_buff + \
-            bytearray("%.6f" % convert_to_only_degree(gps_data.longitude))
+            bytearray("%.6f" % self.convert_to_only_degree(self.gps_data.longitude))
 
         """FOOTER"""
         self.frame_buff.append(protocol.ETX)  # ETX
 
+        """Update Length Field"""
         self.frame_buff[1] = self.frame_buff.__len__() - 3
-
-        autosocket.send(self.frame_buff)
+        self.socket.send(self.frame_buff)
 
     def convert_to_only_degree(self, string_data):
         float_data = float(string_data)
@@ -93,6 +110,7 @@ class ReportGPS(object):
         result = degree + minute / 60
         return result
 
+
     def convert_to_degree_and_minute(self, float_data):
         degree = int(float_data) * 100
         minute = (float_data % 1) * 60
@@ -100,31 +118,17 @@ class ReportGPS(object):
         result = "%.4f" % (degree + minute)
         return result
 
-    def gps_sender(self):
-        gps_data_parser()
-        send_gps_data()
-
-    def gps_data_parser():
-        global seqnum
-        global gps_data
-
-        if seqnum > 0xffff:
-            seqnum = 0
-        else:
-            seqnum += 1
-
-        gps_data = gps(1, seqnum, random.randrange(50, 85),
-                       "N", "3735.0079", "E", "12701.6446")
 
     def run(self):
-        schedule.every(1).seconds.do(gps_sender)
 
-        gps_data_parser()
         while True:
             schedule.run_pending()
 
+            
+def main():
 
-def send_gps_data():
+    ex = ReportGPS("config.conf")
+    ex.run()
 
 if __name__ == "__main__":
     main()
