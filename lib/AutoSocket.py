@@ -13,7 +13,7 @@ class AutoSocket(object):
         self.server_port = server_port
         self.user_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
 
-    def socket_auto_send(self, data):
+    def send(self, data):
         try:
             self.user_socket.send(data) 
             print "send"
@@ -29,6 +29,8 @@ class AutoSocket(object):
 
 
 def main():
+    # autosocket = AutoSocket("192.168.0.11",6000)
+    # autosocket.
     pass
 
 

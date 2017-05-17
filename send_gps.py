@@ -108,7 +108,7 @@ def send_gps_data():
     """FOOTER"""
     frame_buff.append(0x03) # ETX
     
-    autosocket.socket_auto_send(frame_buff)
+    autosocket.send(frame_buff)
 
 
 if __name__ == "__main__":
