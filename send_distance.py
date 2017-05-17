@@ -1,14 +1,32 @@
+
+"""official lib"""
 import sys
 sys.path.insert(0, 'lib')
-
 import schedule # see https://github.com/dbader/schedule
 import serial
-import autosocket
+import ConfigParser
 
 
-device_id = 0x01
+"""my lib"""
+import AutoSocket
+import PrintConfig
+
+
+CONFIG_PATH = "config.conf"
+
+printconfig = PrintConfig.PrintConfig(CONFIG_PATH)
+printconfig.show()
+
+config = ConfigParser.ConfigParser()
+config.read(CONFIG_PATH)
+
+device_id = config.getint("DEVICE_INFO", "id")
+server_ip = config.get("NETWORK_CONF", "server_ip")
+server_port = config.getint("NETWORK_CONF", "server_port")
+
 
 radar_serial = serial.Serial('/dev/serial0',921600)
+socket = AutoSocket.AutoSocket(server_ip, server_port)
 
 distance = 0
 seqnum = 0 
@@ -38,9 +56,10 @@ def radar_parser():
     except Exception as e:
         pass
     finally:
-        print rx_msg
-        print distance
+        # print rx_msg
+        # print distance
         #print value
+        pass
         
 
 
@@ -70,7 +89,7 @@ def send_distance():
     frame_buff.append(0x03) # ETX
 
     
-    autosocket.socket_auto_send(frame_buff)
+    socket.socket_auto_send(frame_buff)
 
 
 
