@@ -1,7 +1,5 @@
 
 
-
-
 def main():
     # gps_serial.close()
     # gps_serial.open()
@@ -10,7 +8,6 @@ def main():
     gps_data_parser()
     while True:
         schedule.run_pending()
-
 
 
 def gps_sender():
@@ -31,6 +28,8 @@ def gps_data_parser():
                    "N", "3735.0079", "E", "12701.6446")
 
 convert_to_only_degree
+
+
 def send_gps_data():
     global gps_data
 

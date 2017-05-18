@@ -9,10 +9,6 @@ from import_manager import PrintConfig
 from import_manager import protocol
 
 
-
-# CONFIG_PATH = "config.conf"
-
-
 class ReportDistance(object):
     """docstring for ReportDistance"""
 
@@ -33,8 +29,10 @@ class ReportDistance(object):
 
         """IMPULSE_RADAR_CONF"""
         serial_path = config.get("IMPULSE_RADAR_CONF", "serial_path")
-        serial_baudrate = config.getint("IMPULSE_RADAR_CONF", "serial_baudrate")
-        report_interval = config.getint("IMPULSE_RADAR_CONF", "report_interval")
+        serial_baudrate = config.getint(
+            "IMPULSE_RADAR_CONF", "serial_baudrate")
+        report_interval = config.getint(
+            "IMPULSE_RADAR_CONF", "report_interval")
 
         self.seqnum = 0
         self.distance = 0
@@ -88,8 +86,7 @@ class ReportDistance(object):
                 value = int(float(rx_msg[13:21]))
                 self.distance = (self.distance * 0.95) + (value * 0.05)
             except Exception as e:
-                pass
-
+                print(e)
 
 
 def main():

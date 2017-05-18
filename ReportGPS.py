@@ -104,7 +104,7 @@ class ReportGPS(object):
         self.frame_buff = self.frame_buff + bytearray(self.gps_data.EW)
         self.frame_buff = self.frame_buff + \
             bytearray("%.6f" % self.gps_data.longitude)
-            
+
         """FOOTER"""
         self.frame_buff.append(protocol.ETX)  # ETX
 
