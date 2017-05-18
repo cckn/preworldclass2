@@ -11,7 +11,6 @@ from import_manager import PrintConfig
 from import_manager import protocol
 
 
-
 TEST_GPS_STRING_1 = "$GPRMC,114455.532,A,3735.0079,N,12701.6446,E,0.000000,121.61,110706,,*0A"
 TEST_GPS_STRING_2 = "$GPRMC,011346.002,V,,,,,0.00,0.00,060180,,,N*41"
 
@@ -41,8 +40,11 @@ class ReportGPS(object):
 
         """GPS_DUMMY_CONF"""
         self.tagid = config.getint("GPS_DUMMY_CONF", "tagid")
-        self.zero_point = config.get("GPS_DUMMY_CONF", "zero_point")
-        self.rand_value = config.get("GPS_DUMMY_CONF", "rand_value")
+        self.default_latitute = config.getfloat(
+            "GPS_DUMMY_CONF", "default_latitute")
+        self.default_longitute = config.getfloat(
+            "GPS_DUMMY_CONF", "default_longitute")
+        self.rand_value = config.getint("GPS_DUMMY_CONF", "rand_value")
 
         self.seqnum = 0
 
@@ -54,19 +56,28 @@ class ReportGPS(object):
 
         schedule.every(report_interval).seconds.do(self.report)
 
-        self.gps = namedtuple("gps", "tagid, seqnum, NS, latitude, EW, longitude")
+        self.gps = namedtuple(
+            "gps", "tagid, seqnum, NS, latitude, EW, longitude")
         self.gps_data = 0
 
     # def init()
 
     def update(self):
-        if self.seqnum > 0xffff:
+        if self.seqnum >= 0xffff:
             self.seqnum = 0
         else:
             self.seqnum += 1
 
-        self.gps_data = self.gps(self.tagid ,self.seqnum, 
-                       "N", "3735.0079", "E", "12701.6446")
+        latitude = self.default_latitute + \
+            (float(random.randrange(0, self.rand_value)) / pow(10, 6))
+        longitude = self.default_longitute + \
+            (float(random.randrange(0, self.rand_value)) / pow(10, 6))
+
+        self.gps_data = self.gps(self.tagid, self.seqnum,
+                                 "N", latitude, "E", longitude)
+
+        random.randrange(0, 85)
+        self
 
     def report(self):
 
@@ -89,11 +100,11 @@ class ReportGPS(object):
         """BODY - GPS DATA"""
         self.frame_buff = self.frame_buff + bytearray(self.gps_data.NS)
         self.frame_buff = self.frame_buff + \
-            bytearray("%.6f" % self.convert_to_only_degree(self.gps_data.latitude))
+            bytearray("%.6f" % self.gps_data.latitude)
         self.frame_buff = self.frame_buff + bytearray(self.gps_data.EW)
         self.frame_buff = self.frame_buff + \
-            bytearray("%.6f" % self.convert_to_only_degree(self.gps_data.longitude))
-
+            bytearray("%.6f" % self.gps_data.longitude)
+            
         """FOOTER"""
         self.frame_buff.append(protocol.ETX)  # ETX
 
@@ -110,7 +121,6 @@ class ReportGPS(object):
         result = degree + minute / 60
         return result
 
-
     def convert_to_degree_and_minute(self, float_data):
         degree = int(float_data) * 100
         minute = (float_data % 1) * 60
@@ -118,13 +128,12 @@ class ReportGPS(object):
         result = "%.4f" % (degree + minute)
         return result
 
-
     def run(self):
 
         while True:
             schedule.run_pending()
 
-            
+
 def main():
 
     ex = ReportGPS("config.conf")
