@@ -48,11 +48,11 @@ class ReportGPS(object):
 
         self.seqnum = 0
 
-        self.gps_serial = serial.Serial(serial_path, serial_baudrate)
+        # self.gps_serial = serial.Serial(serial_path, serial_baudrate)
         self.socket = AutoSocket.AutoSocket(server_ip, server_port)
 
-        self.gps_serial.close()
-        self.gps_serial.open()
+        # self.gps_serial.close()
+        # self.gps_serial.open()
 
         schedule.every(report_interval).seconds.do(self.report)
 
@@ -76,8 +76,7 @@ class ReportGPS(object):
         self.gps_data = self.gps(self.tagid, self.seqnum,
                                  "N", latitude, "E", longitude)
 
-        random.randrange(0, 85)
-        self
+        print(str(latitude) + " , " + str(longitude))
 
     def report(self):
 
