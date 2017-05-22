@@ -1,5 +1,6 @@
 #-*- coding: utf-8 -*-
 
+import sys
 import schedule  # see https://github.com/dbader/schedule
 import serial
 import ConfigParser
@@ -9,11 +10,11 @@ from import_manager import PrintConfig
 from import_manager import protocol
 
 
-class ReportDistance(object):
-    """docstring for ReportDistance"""
+class certification(object):
+    """docstring for certification"""
 
     def __init__(self, config_path):
-        super(ReportDistance, self).__init__()
+        super(certification, self).__init__()
 
         PrintConfig.PrintConfig(config_path).show()
 
@@ -49,8 +50,8 @@ class ReportDistance(object):
 
     def report(self):
 
-        if self.seqnum >= 0xffff:
-            self.seqnum = 0
+        if self.seqnum == 1000:
+            sys.exit(1)
         else:
             self.seqnum += 1
 
@@ -93,7 +94,7 @@ class ReportDistance(object):
 
 def main():
 
-    ex = ReportDistance("config.conf")
+    ex = certification("config.conf")
     ex.run()
 
 if __name__ == "__main__":

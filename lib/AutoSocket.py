@@ -9,6 +9,7 @@ class AutoSocket(object):
         self.server_ip = server_ip
         self.server_port = server_port
         self.user_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.user_socket.connect((self.server_ip, self.server_port))
 
     def send(self, data):
         try:
