@@ -76,16 +76,17 @@ class certification(object):
         self.frame_buff[1] = self.frame_buff.__len__() - 3
         self.socket.send(self.frame_buff)
 
-        print("Distance : " + str(self.distance))
+        print("SeqNum : " + str(self.seqnum) + " " +
+              "Distance : " + str(self.distance))
 
     def run(self):
 
         while True:
             schedule.run_pending()
 
-            rx_msg = self.radar_serial.readline()
             # print(rx_msg)
             try:
+                rx_msg = self.radar_serial.readline()
                 value = int(float(rx_msg[13:21]))
                 self.distance = (self.distance * 0.95) + (value * 0.05)
             except Exception as e:
