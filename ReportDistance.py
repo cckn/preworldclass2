@@ -36,6 +36,7 @@ class ReportDistance(object):
 
         self.seqnum = 0
         self.distance = 0
+        self.count = 0
 
         self.radar_serial = serial.Serial(serial_path, serial_baudrate)
         self.socket = AutoSocket.AutoSocket(server_ip, server_port)
@@ -45,8 +46,8 @@ class ReportDistance(object):
 
         schedule.every(report_interval).seconds.do(self.report)
 
-        self.f1 = open("raw_data.txt", 'a')
-        self.f2 = open("average.txt", 'a')
+        self.f1 = open("log/raw_data.txt", 'a')
+        self.f2 = open("log/average.txt", 'a')
 
     # def init()
 
@@ -78,7 +79,8 @@ class ReportDistance(object):
         self.frame_buff[1] = self.frame_buff.__len__() - 3
 #        self.socket.send(self.frame_buff)
 
-        print("Distance : " + str(self.distance))
+        # print("Distance : " + str(self.distance))
+        print(self.count)
         self.f2.write(str(self.distance))
 
     def run(self):
@@ -92,6 +94,7 @@ class ReportDistance(object):
                 self.f1.write(rx_msg + "\n")
                 value = int(float(rx_msg[13:21]))
                 self.distance = (self.distance * 0.95) + (value * 0.05)
+                self.count = self.count + 1
             except Exception as e:
                 print(e)
 
