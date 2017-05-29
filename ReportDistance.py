@@ -45,6 +45,9 @@ class ReportDistance(object):
 
         schedule.every(report_interval).seconds.do(self.report)
 
+        self.f1 = open("raw_data.txt", 'a')
+        self.f2 = open("average.txt", 'a')
+
     # def init()
 
     def report(self):
@@ -73,18 +76,20 @@ class ReportDistance(object):
 
         """Update Length Field"""
         self.frame_buff[1] = self.frame_buff.__len__() - 3
-        self.socket.send(self.frame_buff)
+#        self.socket.send(self.frame_buff)
 
         print("Distance : " + str(self.distance))
+        self.f2.write(str(self.distance))
 
     def run(self):
 
         while True:
             schedule.run_pending()
 
-            rx_msg = self.radar_serial.readline()
-            # print(rx_msg)
             try:
+                rx_msg = self.radar_serial.readline()
+#                print(rx_msg)
+                self.f1.write(rx_msg + "\n")
                 value = int(float(rx_msg[13:21]))
                 self.distance = (self.distance * 0.95) + (value * 0.05)
             except Exception as e:
