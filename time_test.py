@@ -1,12 +1,29 @@
 
 #-*- coding: utf-8 -*-
+import schedule  # see https://github.com/dbader/schedule
+import datetime
 
-from datetime import datetime
+
+def teee():
+    dt = datetime.datetime.now() + datetime.timedelta(seconds=10)
+
+    if(dt.microsecond < 1000):
+        print(dt)
+        print(dt.microsecond)
+
+
+# schedule.every(1).seconds.do(teee)
 
 
 while True:
-    dt = datetime.now()
-    print(dt)
+    dt = datetime.datetime.now() + datetime.timedelta(seconds=10)
+
+    if(dt.microsecond < 100):
+        print(dt)
+        print(dt.microsecond)
+
+    # schedule.run_pending()
+
 # #-*- coding: utf-8 -*-
 
 # import socket
