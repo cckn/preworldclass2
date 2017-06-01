@@ -16,10 +16,10 @@ class ReportDistance(object):
     def __init__(self, config_path):
         super(ReportDistance, self).__init__()
         self.get_config(config_path)
-
         self.seqnum = 0
         self.distance = 0
         self.count = 0
+        self.num = 0
 
         self.radar_serial = serial.Serial(
             self.serial_path, self.serial_baudrate)
@@ -56,6 +56,8 @@ class ReportDistance(object):
 
     def report(self):
 
+        dt = datetime.datetime.now() + datetime.timedelta(microseconds=-50000)
+
         if self.seqnum >= 0xffff:
             self.seqnum = 0
         else:
@@ -72,6 +74,9 @@ class ReportDistance(object):
         """ BODY """
         self.frame_buff.append((self.seqnum >> 8) & 0xff)  # seqNum
         self.frame_buff.append((self.seqnum) & 0xff)  # seqNum
+
+        self.frame_buff = self.frame_buff + bytearray(str(dt.time()))
+
         self.frame_buff.append((int(self.distance) >> 8) & 0xff)  # DISTANCE HI
         self.frame_buff.append(int(self.distance) & 0xff)  # DISTANCE LOW
 
@@ -80,23 +85,29 @@ class ReportDistance(object):
 
         """Update Length Field"""
         self.frame_buff[1] = self.frame_buff.__len__() - 3
-#        self.socket.send(self.frame_buff)
-
+        if self.frame_buff[1] == 21:
+            self.socket.send(self.frame_buff)
+        # print(self.frame_buff[1])
         # print("Distance : " + str(self.distance))
         # print(self.count)
-        self.f2.write(str(self.distance))
+        # self.f2.write(str(self.distance))
 
     def run(self):
 
         while True:
-            schedule.run_pending()
+            # schedule.run_pending()
 
             try:
                 rx_msg = self.radar_serial.readline()
                 # print(rx_msg)
                 self.f1.write(rx_msg + "\n")
                 value = int(float(rx_msg[13:21]))
-                self.distance = (self.distance * 0.95) + (value * 0.05)
+                self.distance = value
+                if self.num > 10:
+                    self.report()
+                    self.num = 0
+                else:
+                    self.num = self.num + 1
                 # self.count = self.count + 1
             except Exception as e:
                 print(e)

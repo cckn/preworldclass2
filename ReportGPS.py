@@ -20,6 +20,23 @@ class ReportGPS(object):
 
     def __init__(self, config_path):
         super(ReportGPS, self).__init__()
+        self.get_config(config_path)
+
+        self.seqnum = 0
+
+        # self.gps_serial = serial.Serial(serial_path, serial_baudrate)
+        self.socket = AutoSocket.AutoSocket(self.server_ip, self.server_port)
+
+        # self.gps_serial.close()
+        # self.gps_serial.open()
+
+        schedule.every(self.report_interval).seconds.do(self.report)
+
+        self.gps = namedtuple(
+            "gps", "tagid, seqnum, NS, latitude, EW, longitude")
+        self.gps_data = 0
+
+    def get_config(self, config_path):
 
         PrintConfig.PrintConfig(config_path).show()
 
@@ -30,13 +47,13 @@ class ReportGPS(object):
         self.device_id = config.getint("DEVICE_INFO", "id")
 
         """NETWORK_CONF"""
-        server_ip = config.get("NETWORK_CONF", "server_ip")
-        server_port = config.getint("NETWORK_CONF", "server_port")
+        self.server_ip = config.get("NETWORK_CONF", "server_ip")
+        self.server_port = config.getint("NETWORK_CONF", "server_port")
 
         """GPS_CONF"""
-        serial_path = config.get("GPS_CONF", "serial_path")
-        serial_baudrate = config.getint("GPS_CONF", "serial_baudrate")
-        report_interval = config.getint("GPS_CONF", "report_interval")
+        self.serial_path = config.get("GPS_CONF", "serial_path")
+        self.serial_baudrate = config.getint("GPS_CONF", "serial_baudrate")
+        self.report_interval = config.getint("GPS_CONF", "report_interval")
 
         """GPS_DUMMY_CONF"""
         self.tagid = config.getint("GPS_DUMMY_CONF", "tagid")
@@ -45,22 +62,6 @@ class ReportGPS(object):
         self.default_longitute = config.getfloat(
             "GPS_DUMMY_CONF", "default_longitute")
         self.rand_value = config.getint("GPS_DUMMY_CONF", "rand_value")
-
-        self.seqnum = 0
-
-        # self.gps_serial = serial.Serial(serial_path, serial_baudrate)
-        self.socket = AutoSocket.AutoSocket(server_ip, server_port)
-
-        # self.gps_serial.close()
-        # self.gps_serial.open()
-
-        schedule.every(report_interval).seconds.do(self.report)
-
-        self.gps = namedtuple(
-            "gps", "tagid, seqnum, NS, latitude, EW, longitude")
-        self.gps_data = 0
-
-    # def init()
 
     def update(self):
         if self.seqnum >= 0xffff:

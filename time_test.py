@@ -2,6 +2,7 @@
 #-*- coding: utf-8 -*-
 import schedule  # see https://github.com/dbader/schedule
 import datetime
+import socket
 
 
 def teee():
@@ -14,13 +15,15 @@ def teee():
 
 # schedule.every(1).seconds.do(teee)
 
+user_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+user_socket.connect(("192.168.10.126", 6005))
 
 while True:
-    dt = datetime.datetime.now() + datetime.timedelta(seconds=10)
+    dt = datetime.datetime.now()  # + datetime.timedelta(seconds=10)
 
     if(dt.microsecond < 100):
         print(dt)
-        print(dt.microsecond)
+        user_socket.send(str(dt) + "\n")
 
     # schedule.run_pending()
 
